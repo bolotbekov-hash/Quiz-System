@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Master</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #0f172a;
+            --primary-hover: #334155;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --success: #10b981;
+            --success-bg: #ecfdf5;
+            --error-bg: #fef2f2;
+            --border: #e2e8f0;
+            --radius: 12px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --transition: 0.2s ease;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4 { color: var(--text-main); font-weight: 600; margin-bottom: 1rem; }
+        a { color: var(--accent); text-decoration: none; transition: var(--transition); }
+        a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+        .card {
+            background: var(--card-bg);
+            padding: 32px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .app-header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .app-logo { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.5px; }
+
+        .form-group { margin-bottom: 16px; }
+        input[type="text"], input[type="password"], select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: var(--transition);
+            background: var(--bg-color);
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: var(--card-bg);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+        }
+        .btn-auto { width: auto; }
+        .btn-sm { padding: 8px 16px; font-size: 0.875rem; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-accent { background: var(--accent); color: white; }
+        .btn-accent:hover { background: var(--accent-hover); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-outline:hover { background: var(--bg-color); border-color: var(--text-muted); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: var(--danger-hover); }
+        .btn-ghost-danger { background: transparent; color: var(--danger); padding: 6px 12px; }
+        .btn-ghost-danger:hover { background: var(--error-bg); }
+
+        .quiz-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            background: var(--bg-color);
+            transition: var(--transition);
+        }
+        .quiz-item:hover { border-color: var(--accent); }
+        .quiz-actions { display: flex; gap: 8px; }
+
+        .builder-q-card {
+            border: 1px solid var(--border);
+            padding: 20px;
+            margin-top: 16px;
+            border-radius: 8px;
+            background: #fff;
+            position: relative;
+        }
+
+        .option-label {
+            display: block;
+            padding: 14px 16px;
+            margin: 8px 0;
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .option-label:hover { border-color: var(--accent); background: #f0f7ff; }
+        .option-label input { margin-right: 10px; }
+
+        .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 24px; }
+
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: var(--bg-color); font-weight: 600; color: var(--text-muted); }
+
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .text-center { text-align: center; }
+        .mt-4 { margin-top: 24px; }
+        .mb-2 { margin-bottom: 8px; }
+        .text-muted { color: var(--text-muted); font-size: 0.9rem; }
+
+        .msg { padding: 12px; border-radius: 8px; margin-top: 16px; font-weight: 500; text-align: center; display: none; }
+        .msg.error { background: var(--error-bg); color: var(--danger); display: block; }
+        .msg.success { background: var(--success-bg); color: var(--success); display: block; }
+
+        #modalOverlay { display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 999; }
+        .modal {
+            display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 90%; max-width: 600px; background: var(--card-bg); padding: 32px;
+            border-radius: 16px; z-index: 1000; max-height: 85vh; overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 600px) {
+            .card { padding: 20px; }
+            .quiz-item { flex-direction: column; align-items: flex-start; gap: 16px; }
+            .quiz-actions { width: 100%; justify-content: space-between; }
+            .btn-auto { width: 100%; }
+            .admin-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header id="appHeader" class="app-header" style="display: none;">
+    <div class="app-logo">Quiz Master</div>
+    <div style="display: flex; align-items: center; gap: 16px;">
+        <span id="displayUser" class="text-muted" style="font-weight: 500;"></span>
+        <button class="btn btn-sm btn-outline" onclick="logout()">Выйти</button>
+    </div>
+</header>
+
+<div class="container">
+
+    <div id="authPanel" class="card" style="max-width: 400px; margin: 40px auto;">
+        <h2 id="authTitle" class="text-center">Вход в систему</h2>
+
+        <div id="loginFields">
+            <div class="form-group">
+                <input type="text" id="username" placeholder="Логин">
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" placeholder="Пароль">
+            </div>
+            <button class="btn btn-primary" onclick="login()">Войти</button>
+            <p class="text-center mt-4 text-muted">Нет аккаунта? <a href="#" onclick="toggleAuth(true)">Регистрация</a></p>
+        </div>
+
+        <div id="registerFields" style="display:none">
+            <div class="form-group">
+                <input type="text" id="regUsername" placeholder="Логин (только буквы/цифры)">
+            </div>
+            <div class="form-group">
+                <input type="password" id="regPassword" placeholder="Пароль (ровно 8 цифр)">
+            </div>
+            <button class="btn btn-primary" onclick="register()">Создать аккаунт</button>
+            <p class="text-center mt-4 text-muted"><a href="#" onclick="toggleAuth(false)">Вернуться ко входу</a></p>
+        </div>
+        <div id="message" class="msg"></div>
+    </div>
+
+    <div id="mainPanel" style="display:none">
+        <div id="adminControls" class="card" style="display:none;">
+            <div class="flex-between">
+                <h3>Панель администратора</h3>
+                <span class="text-muted" style="background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">ADMIN</span>
+            </div>
+            <div class="admin-grid">
+                <button class="btn btn-outline" onclick="showAdminSection('builder')">
+                    <span style="margin-right:8px;">🛠</span> Создать квиз
+                </button>
+                <button class="btn btn-outline" onclick="loadUsers()">
+                    <span style="margin-right:8px;">👥</span> Пользователи
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Доступные квизы</h3>
+            <div id="quizList" class="mt-4">Загрузка...</div>
+        </div>
+    </div>
+
+    <div id="builderSection" class="card" style="display:none">
+        <div class="flex-between mb-2">
+            <h3>Создание квиза</h3>
+            <button class="btn btn-sm btn-outline btn-auto" onclick="hideAdminSection()">Отмена</button>
+        </div>
+        <input type="text" id="newQuizTitle" placeholder="Название квиза (например: Основы JavaScript)" style="font-size: 1.1rem; font-weight: 500;">
+        <div id="builderQuestions"></div>
+        <div class="admin-grid" style="margin-top: 16px;">
+            <button class="btn btn-outline" onclick="addQuestionField()">+ Добавить вопрос</button>
+            <button class="btn btn-primary" onclick="saveCreatedQuiz()">Опубликовать квиз</button>
+        </div>
+    </div>
+
+    <div id="usersSection" class="card" style="display:none">
+        <div class="flex-between mb-2">
+            <h3>Пользователи системы</h3>
+            <button class="btn btn-sm btn-outline btn-auto" onclick="hideAdminSection()">Закрыть</button>
+        </div>
+        <div class="table-container" id="usersTableContainer"></div>
+    </div>
+
+    <div id="quizRunPanel" class="card" style="display:none">
+        <div class="flex-between mb-2">
+            <h2 id="currentQuizTitle"></h2>
+            <button class="btn btn-sm btn-ghost-danger btn-auto" onclick="closeResultModal()">Прервать</button>
+        </div>
+        <div id="questionsContainer" class="mt-4"></div>
+        <button class="btn btn-accent mt-4" onclick="submitAnswers()">Завершить тест</button>
+    </div>
+
+</div>
+
+<div id="modalOverlay" onclick="closeResultModal()"></div>
+<div id="resultModal" class="modal">
+    <h2 id="modalScoreTitle" class="text-center" style="font-size: 1.5rem; margin-bottom: 24px;"></h2>
+    <div id="reviewContainer"></div>
+    <button class="btn btn-primary mt-4" onclick="closeResultModal()">Вернуться на главную</button>
+</div>
+
+<script>
+    let token = localStorage.getItem('jwt');
+    let currentQuizId = null;
+
+    // При загрузке страницы — если токен есть и он валидный (не содержит мусора), проверяем авторизацию
+    if (token && !token.includes('{') && !token.includes(':')) {
+        checkAuth();
+    } else if (token) {
+        // Токен битый — чистим
+        localStorage.removeItem('jwt');
+        token = null;
+    }
+
+    function toggleAuth(isReg) {
+        document.getElementById('loginFields').style.display = isReg ? 'none' : 'block';
+        document.getElementById('registerFields').style.display = isReg ? 'block' : 'none';
+        document.getElementById('authTitle').innerText = isReg ? 'Регистрация' : 'Вход в систему';
+        document.getElementById('message').className = 'msg';
+    }
+
+    function showMsg(t, type) {
+        const m = document.getElementById('message');
+        m.innerText = t;
+        m.className = `msg ${type}`;
+    }
+
+    async function login() {
+        const u = document.getElementById('username').value.trim();
+        const p = document.getElementById('password').value.trim();
+
+        if (!u || !p) return showMsg("Заполните все поля", "error");
+
+        try {
+            const res = await fetch('/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: u, password: p })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                // Поддержка разных названий поля токена
+                token = data.token || data.accessToken || data.jwt || data.access_token;
+
+                if (!token) {
+                    showMsg("Ошибка: токен не получен", "error");
+                    return;
+                }
+
+                localStorage.setItem('jwt', token);
+                checkAuth();
+            } else {
+                showMsg("Неверный логин или пароль", "error");
+            }
+        } catch (e) {
+            showMsg("Ошибка соединения с сервером", "error");
+        }
+    }
+
+    async function register() {
+        const u = document.getElementById('regUsername').value.trim();
+        const p = document.getElementById('regPassword').value.trim();
+
+        const loginRegex = /^[a-zA-Z0-9]+$/;
+        const passRegex = /^[0-9]{8}$/;
+
+        if (!loginRegex.test(u)) return showMsg("Логин: только латиница и цифры!", "error");
+        if (!passRegex.test(p)) return showMsg("Пароль: строго 8 цифр!", "error");
+
+        try {
+            const res = await fetch('/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: u, password: p })
+            });
+
+            if (res.ok) {
+                showMsg("Регистрация успешна! Войдите.", "success");
+                setTimeout(() => toggleAuth(false), 1500);
+            } else {
+                let errMsg = "Ошибка регистрации";
+                try {
+                    const errData = await res.json();
+                    errMsg = errData.message || errData.error || errMsg;
+                } catch (_) {
+                    errMsg = await res.text() || errMsg;
+                }
+                showMsg(errMsg, "error");
+            }
+        } catch (e) {
+            showMsg("Ошибка соединения с сервером", "error");
+        }
+    }
+
+    async function checkAuth() {
+        try {
+            const res = await fetch('/api/users/me', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (res.ok) {
+                const user = await res.json();
+
+                document.getElementById('authPanel').style.display = 'none';
+                document.getElementById('appHeader').style.display = 'flex';
+                document.getElementById('mainPanel').style.display = 'block';
+                document.getElementById('displayUser').innerText = user.username;
+
+                if (user.roles && user.roles.includes('ROLE_ADMIN')) {
+                    document.getElementById('adminControls').style.display = 'block';
+                }
+
+                loadQuizzes();
+            } else {
+                logout();
+            }
+        } catch (e) {
+            logout();
+        }
+    }
+
+    async function loadQuizzes() {
+        try {
+            const res = await fetch('/api/quizzes', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (!res.ok) {
+                document.getElementById('quizList').innerHTML = "<p class='text-muted'>Ошибка загрузки тестов.</p>";
+                return;
+            }
+
+            const quizzes = await res.json();
+
+            if (!Array.isArray(quizzes)) {
+                document.getElementById('quizList').innerHTML = "<p class='text-muted'>Нет доступных тестов.</p>";
+                return;
+            }
+
+            const isAdmin = document.getElementById('adminControls').style.display === 'block';
+
+            document.getElementById('quizList').innerHTML = quizzes.length > 0
+                ? quizzes.map(q => `
+                    <div class="quiz-item">
+                        <div>
+                            <strong style="font-size: 1.1rem; display: block; margin-bottom: 4px;">${q.title}</strong>
+                            <span class="text-muted">${q.questions ? q.questions.length : 0} вопросов</span>
+                        </div>
+                        <div class="quiz-actions">
+                            <button class="btn btn-sm btn-accent btn-auto" onclick="startQuiz(${q.id})">Пройти</button>
+                            ${isAdmin ? `<button class="btn btn-sm btn-ghost-danger btn-auto" onclick="deleteQuiz(${q.id})">Удалить</button>` : ''}
+                        </div>
+                    </div>
+                `).join('')
+                : "<p class='text-muted'>Нет доступных тестов.</p>";
+
+        } catch (e) {
+            document.getElementById('quizList').innerHTML = "<p class='text-muted'>Ошибка загрузки тестов.</p>";
+        }
+    }
+
+    async function startQuiz(id) {
+        try {
+            const res = await fetch(`/api/quizzes/${id}`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (!res.ok) return alert("Не удалось загрузить квиз");
+
+            const quiz = await res.json();
+            currentQuizId = id;
+
+            document.getElementById('mainPanel').style.display = 'none';
+            document.getElementById('quizRunPanel').style.display = 'block';
+            document.getElementById('currentQuizTitle').innerText = quiz.title;
+
+            document.getElementById('questionsContainer').innerHTML = quiz.questions.map((q, i) => `
+                <div class="question-block" data-q-id="${q.id}" style="margin-bottom: 32px;">
+                    <h4 style="margin-bottom: 12px;">${i + 1}. ${q.text}</h4>
+                    ${q.options.map(opt => `
+                        <label class="option-label">
+                            <input type="radio" name="q_${q.id}" value="${opt}"> ${opt}
+                        </label>
+                    `).join('')}
+                </div>
+            `).join('');
+        } catch (e) {
+            alert("Ошибка загрузки квиза");
+        }
+    }
+
+    async function submitAnswers() {
+        const blocks = document.querySelectorAll('.question-block');
+        const answers = {};
+        blocks.forEach(b => {
+            const qId = b.getAttribute('data-q-id');
+            const sel = b.querySelector('input[type="radio"]:checked');
+            answers[qId] = sel ? sel.value : "";
+        });
+
+        try {
+            const res = await fetch(`/api/quizzes/${currentQuizId}/submit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ quizId: currentQuizId, answers })
+            });
+
+            if (!res.ok) return alert("Ошибка при отправке ответов");
+
+            showReview(await res.json(), answers);
+        } catch (e) {
+            alert("Ошибка соединения с сервером");
+        }
+    }
+
+    function showReview(result, userAnswers) {
+        const blocks = document.querySelectorAll('.question-block');
+        let html = "";
+        blocks.forEach(b => {
+            const qId = b.getAttribute('data-q-id');
+            const qText = b.querySelector('h4').innerText;
+            const correct = result.correctAnswers[qId];
+            const user = userAnswers[qId];
+            const isOk = user === correct;
+
+            const bgColor = isOk ? 'var(--success-bg)' : 'var(--error-bg)';
+            const borderColor = isOk ? 'var(--success)' : 'var(--danger)';
+            const textColor = isOk ? 'var(--success)' : 'var(--danger)';
+
+            html += `
+                <div style="padding: 16px; border-left: 4px solid ${borderColor}; background: ${bgColor}; margin-bottom: 16px; border-radius: 0 8px 8px 0;">
+                    <div style="font-weight: 500; margin-bottom: 8px;">${qText}</div>
+                    <div style="font-size: 0.9rem;">
+                        Ваш ответ: <span style="color:${textColor}; font-weight:600;">${user || 'не выбран'}</span>
+                    </div>
+                    ${!isOk ? `<div style="font-size: 0.9rem; margin-top: 4px;">Правильно: <span style="color:var(--success); font-weight:600;">${correct}</span></div>` : ''}
+                </div>
+            `;
+        });
+
+        document.getElementById('modalScoreTitle').innerText = `Итог: ${result.score} / ${result.total} (${result.percentage}%)`;
+        document.getElementById('reviewContainer').innerHTML = html;
+        document.getElementById('modalOverlay').style.display = 'block';
+        document.getElementById('resultModal').style.display = 'block';
+    }
+
+    function showAdminSection(type) {
+        document.getElementById('builderSection').style.display = type === 'builder' ? 'block' : 'none';
+        document.getElementById('usersSection').style.display = type === 'users' ? 'block' : 'none';
+        document.getElementById('quizList').parentElement.style.display = 'none';
+        if (type === 'builder' && document.querySelectorAll('.builder-q-card').length === 0) {
+            addQuestionField();
+        }
+    }
+
+    function hideAdminSection() {
+        document.getElementById('builderSection').style.display = 'none';
+        document.getElementById('usersSection').style.display = 'none';
+        document.getElementById('quizList').parentElement.style.display = 'block';
+    }
+
+    function addQuestionField() {
+        const container = document.getElementById('builderQuestions');
+        const uniqueId = 'q-block-' + Date.now();
+        const div = document.createElement('div');
+        div.className = 'builder-q-card';
+        div.id = uniqueId;
+
+        div.innerHTML = `
+            <div class="flex-between mb-2">
+                <strong class="question-number text-muted">Новый вопрос</strong>
+                <button class="btn btn-sm btn-ghost-danger btn-auto" onclick="document.getElementById('${uniqueId}').remove(); reindexQuestions();">Удалить</button>
+            </div>
+            <div class="form-group"><input type="text" class="q-text" placeholder="Текст вопроса"></div>
+            <div class="form-group"><input type="text" class="q-opt" placeholder="Вариант 1"></div>
+            <div class="form-group"><input type="text" class="q-opt" placeholder="Вариант 2"></div>
+            <div class="form-group"><input type="text" class="q-opt" placeholder="Вариант 3"></div>
+            <div class="form-group"><input type="text" class="q-opt" placeholder="Вариант 4"></div>
+            <div class="form-group mt-4">
+                <label class="text-muted" style="font-size:0.85rem; display:block; margin-bottom:4px;">Правильный ответ (копия текста варианта)</label>
+                <input type="text" class="q-correct" placeholder="Вставьте правильный ответ сюда" style="border-color: var(--success); background: var(--success-bg);">
+            </div>
+        `;
+        container.appendChild(div);
+        reindexQuestions();
+    }
+
+    function reindexQuestions() {
+        document.querySelectorAll('.builder-q-card').forEach((b, i) => {
+            b.querySelector('.question-number').innerText = `Вопрос №${i + 1}`;
+        });
+    }
+
+    async function saveCreatedQuiz() {
+        const title = document.getElementById('newQuizTitle').value.trim();
+        if (!title) return alert("Укажите название квиза!");
+
+        const questions = Array.from(document.querySelectorAll('.builder-q-card')).map(b => ({
+            text: b.querySelector('.q-text').value.trim(),
+            correctAnswer: b.querySelector('.q-correct').value.trim(),
+            options: Array.from(b.querySelectorAll('.q-opt')).map(i => i.value.trim()).filter(v => v !== "")
+        })).filter(q => q.text && q.correctAnswer && q.options.length >= 2);
+
+        if (questions.length === 0) return alert("Заполните корректно хотя бы один вопрос!");
+
+        try {
+            const res = await fetch('/api/quizzes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ title, questions })
+            });
+
+            if (res.ok) {
+                alert("Квиз успешно опубликован!");
+                location.reload();
+            } else {
+                alert("Ошибка при создании квиза");
+            }
+        } catch (e) {
+            alert("Ошибка соединения с сервером");
+        }
+    }
+
+    async function loadUsers() {
+        showAdminSection('users');
+        try {
+            const res = await fetch('/api/users', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (!res.ok) {
+                document.getElementById('usersTableContainer').innerHTML = "<p class='text-muted'>Ошибка загрузки пользователей.</p>";
+                return;
+            }
+
+            const users = await res.json();
+
+            document.getElementById('usersTableContainer').innerHTML = `
+                <table>
+                    <thead>
+                        <tr><th>ID</th><th>Логин</th><th>Роли</th></tr>
+                    </thead>
+                    <tbody>
+                        ${users.map(u => `
+                            <tr>
+                                <td><span class="text-muted">#${u.id}</span></td>
+                                <td style="font-weight:500;">${u.username}</td>
+                                <td><span style="font-size:0.85rem; background:#e2e8f0; padding:4px 8px; border-radius:4px;">${u.roles.join(', ').replace(/ROLE_/g, '')}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } catch (e) {
+            document.getElementById('usersTableContainer').innerHTML = "<p class='text-muted'>Ошибка загрузки пользователей.</p>";
+        }
+    }
+
+    async function deleteQuiz(id) {
+        if (!confirm("Удалить этот квиз навсегда?")) return;
+        try {
+            const res = await fetch(`/api/quizzes/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (res.ok) loadQuizzes();
+            else alert("Ошибка при удалении квиза");
+        } catch (e) {
+            alert("Ошибка соединения с сервером");
+        }
+    }
+
+    function closeResultModal() {
+        document.getElementById('modalOverlay').style.display = 'none';
+        document.getElementById('resultModal').style.display = 'none';
+        document.getElementById('quizRunPanel').style.display = 'none';
+        document.getElementById('mainPanel').style.display = 'block';
+    }
+
+    function logout() {
+        localStorage.removeItem('jwt');
+        token = null;
+        location.reload();
+    }
+</script>
+</body>
+</html>
