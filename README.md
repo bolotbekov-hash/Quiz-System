@@ -79,16 +79,16 @@ This application allows users to register, take quizzes, and view their results.
 
 ### 1. Create Database
 ```sql
-CREATE USER quiz_user WITH PASSWORD '95864235';
-CREATE DATABASE quiz_db OWNER quiz_user;
-GRANT ALL PRIVILEGES ON DATABASE quiz_db TO quiz_user;
+CREATE USER postgres WITH PASSWORD 'postgres';
+CREATE DATABASE Quiz_db OWNER postgres;
+GRANT ALL PRIVILEGES ON DATABASE Quiz_db TO postgres;
 ```
 
 ### 2. Configure `application.properties`
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5433/quiz_db
-spring.datasource.username=quiz_user
-spring.datasource.password=95864235
+spring.datasource.url=jdbc:postgresql://localhost:5432/Quiz_db
+spring.datasource.username=postgres
+spring.datasource.password=postgres
 ```
 
 ### 3. Run
